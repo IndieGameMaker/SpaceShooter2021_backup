@@ -6,7 +6,6 @@ public class PlayerCtrl : MonoBehaviour
 {
     //접근해야 하는 컴포넌트는 반드시 변수에 할당한 후 사용
     private Transform tr;
-    Transform transform;
     //이동 속도 변수(public으로 선언되어 Inspector에 노출됨)
     public float moveSpeed = 10.0f;
 
