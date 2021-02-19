@@ -508,7 +508,7 @@ MonoBehaviour:
   distance: 4
   height: 2
   damping: 0.1
-  targetOffset: 0
+  targetOffset: 2
 --- !u!1001 &974281095
 PrefabInstance:
   m_ObjectHideFlags: 0
