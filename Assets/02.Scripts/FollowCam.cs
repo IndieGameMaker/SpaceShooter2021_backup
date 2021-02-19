@@ -52,6 +52,6 @@ public class FollowCam : MonoBehaviour
                                             damping);       //목표위치까지 도달할 시간
 
         //Camera를 피봇좌표를 향해 회전
-        camTr.LookAt(targetTr.position  + (targetTr.up * targetOffset));  
+        camTr.LookAt(targetTr.position  + (targetTr.up * targetOffset));
     }
 }
