@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class PlayerCtrl : MonoBehaviour
 {
@@ -18,16 +19,23 @@ public class PlayerCtrl : MonoBehaviour
     private readonly float initHp = 100.0f;
     //현재 생명값
     public float currHp;
+    //Hpbar 연결할 변수
+    private Image hpBar;
 
     //델리게이트 선언
     public delegate void PlayerDieHandler();
     //이벤트 선언
     public static event PlayerDieHandler OnPlayerDie;
 
+
     IEnumerator Start()
     {
+        //Hpbar 연결
+        hpBar = GameObject.FindGameObjectWithTag("HP_BAR")?.GetComponent<Image>();
+
         //HP 초기화
         currHp = initHp;
+        DisplayHealth();
         
         //컴포넌트를 추출해 변수에 대입
         tr = GetComponent<Transform>();
@@ -92,6 +100,8 @@ public class PlayerCtrl : MonoBehaviour
         if (currHp >= 0.0f && coll.CompareTag("PUNCH"))
         {
             currHp -= 10.0f;
+            DisplayHealth();
+
             Debug.Log($"Player hp = {currHp/initHp}");
             //Debug.Log($"Player Hp : {currHp}/{initHp}={currHp/initHp}");
 
@@ -119,5 +129,10 @@ public class PlayerCtrl : MonoBehaviour
 
         //주인공 사망 이벤트 호출(발생)
         OnPlayerDie();
+    }
+
+    void DisplayHealth()
+    {
+        hpBar.fillAmount = currHp/initHp;
     }
 }
