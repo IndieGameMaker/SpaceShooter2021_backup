@@ -50,6 +50,11 @@ public class MonsterCtrl : MonoBehaviour
     {
         //이벤트 발생 시 수행할 함수 연결
         PlayerCtrl.OnPlayerDie += this.OnPlayerDie;
+
+        //몬스터의 상태를 체크하는 코루틴 함수 호출
+        StartCoroutine(CheckMonsterState());
+        //상태에 따라 몬스터의 행동을 수행하는 코루틴 함수 호출
+        StartCoroutine(MonsterAction());        
     }
 
     //스크립트가 비활성화 될 때마다 호출되는 함수
@@ -59,7 +64,7 @@ public class MonsterCtrl : MonoBehaviour
         PlayerCtrl.OnPlayerDie -= this.OnPlayerDie;
     }
 
-    void Start () 
+    void Awake () 
     {
         //몬스터의 Transform 할당
         monsterTr = GetComponent<Transform>();
@@ -75,11 +80,6 @@ public class MonsterCtrl : MonoBehaviour
         
         //BloodSprayEffect 프리팹 로드
         bloodEffect = Resources.Load<GameObject>("BloodSprayEffect");
-
-        //몬스터의 상태를 체크하는 코루틴 함수 호출
-        StartCoroutine(CheckMonsterState());
-        //상태에 따라 몬스터의 행동을 수행하는 코루틴 함수 호출
-        StartCoroutine(MonsterAction());
     }
 
     //일정한 간격으로 몬스터의 행동 상태를 체크
@@ -113,57 +113,72 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-    //몬스터의 상태에 따라 몬스터의 동작을 수행
-    IEnumerator MonsterAction()
+//몬스터의 상태에 따라 몬스터의 동작을 수행
+IEnumerator MonsterAction()
+{
+    while (!isDie)
     {
-        while (!isDie)
+        switch (state)
         {
-            switch (state)
-            {
-                //IDLE 상태
-                case State.IDLE:
-                    //추적 중지
-                    agent.isStopped = true;
+            //IDLE 상태
+            case State.IDLE:
+                //추적 중지
+                agent.isStopped = true;
 
-                    //Animator의 IsTrace 변수를 false로 설정
-                    //anim.SetBool("IsTrace", false);
-                    anim.SetBool(hashTrace, false);
-                    break;
-                    
-                //추적 상태
-                case State.TRACE:
-                    //추적 대상의 좌표로 이동시작
-                    agent.SetDestination(playerTr.position);
-                    agent.isStopped = false;
+                //Animator의 IsTrace 변수를 false로 설정
+                //anim.SetBool("IsTrace", false);
+                anim.SetBool(hashTrace, false);
+                break;
+                
+            //추적 상태
+            case State.TRACE:
+                //추적 대상의 좌표로 이동시작
+                agent.SetDestination(playerTr.position);
+                agent.isStopped = false;
 
-                    //Animator의 IsTrace 변수를 true로 설정
-                    //anim.SetBool("IsTrace", true);
-                    anim.SetBool(hashTrace, true);
-                    
-                    //Animator의 IsAttack 변수를 false로 설정
-                    anim.SetBool(hashAttack, false);
-                    break;
+                //Animator의 IsTrace 변수를 true로 설정
+                //anim.SetBool("IsTrace", true);
+                anim.SetBool(hashTrace, true);
+                
+                //Animator의 IsAttack 변수를 false로 설정
+                anim.SetBool(hashAttack, false);
+                break;
 
-                //공격 상태
-                case State.ATTACK:
-                    //Animator의 IsAttack 변수를 true로 설정
-                    anim.SetBool(hashAttack, true);
-                    break;
+            //공격 상태
+            case State.ATTACK:
+                //Animator의 IsAttack 변수를 true로 설정
+                anim.SetBool(hashAttack, true);
+                break;
 
-                //사망
-                case State.DIE:
-                    isDie = true;
-                    //추적 정지
-                    agent.isStopped = true;
-                    //사망 애니메이션 실행
-                    anim.SetTrigger(hashDie);
-                    //몬스터의 Collider 컴포넌트 비활성화
-                    GetComponent<CapsuleCollider>().enabled = false;
-                    break;
-            }
-            yield return new WaitForSeconds(0.3f);
+            //사망
+            case State.DIE:
+                isDie = true;
+                //추적 정지
+                agent.isStopped = true;
+                //사망 애니메이션 실행
+                anim.SetTrigger(hashDie);
+                //몬스터의 Collider 컴포넌트 비활성화
+                GetComponent<CapsuleCollider>().enabled = false;
+
+
+                //일정시간 대기후 오브젝트 풀링으로 환원
+                yield return new WaitForSeconds(3.0f);
+                
+                //사망 후 다시 사용할 때를 위한 변숫값의 초기화
+                hp = 100;
+                isDie = false;
+                state = State.IDLE;
+                
+                //몬스터의 Collider 컴포넌트 활성화
+                GetComponent<CapsuleCollider>().enabled = true;
+                //몬스터를 비활성화
+                this.gameObject.SetActive(false);
+
+                break;
         }
+        yield return new WaitForSeconds(0.3f);
     }
+}
 
     void OnCollisionEnter(Collision coll)
     {
