@@ -113,7 +113,6 @@ public class PlayerCtrl : MonoBehaviour
         }
     }
 
-
     //Player의 사망 처리
     void PlayerDie()
     {

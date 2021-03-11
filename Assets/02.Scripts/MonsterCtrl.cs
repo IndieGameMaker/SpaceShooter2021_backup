@@ -160,7 +160,6 @@ IEnumerator MonsterAction()
                 //몬스터의 Collider 컴포넌트 비활성화
                 GetComponent<CapsuleCollider>().enabled = false;
 
-
                 //일정시간 대기후 오브젝트 풀링으로 환원
                 yield return new WaitForSeconds(3.0f);
                 
@@ -201,6 +200,8 @@ IEnumerator MonsterAction()
             if (hp <= 0)
             {
                 state = State.DIE;
+                //몬스터가 사망했을 때 50점을 추가
+                GameManager.instance.DisplayScore(50);
             }
         }
     }
