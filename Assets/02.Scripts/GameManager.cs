@@ -81,6 +81,7 @@ public class GameManager : MonoBehaviour
         InvokeRepeating("CreateMonster", 2.0f, createTime);
 
         //스코어 점수 출력
+        totScore = PlayerPrefs.GetInt("TOT_SCORE", 0);
         DisplayScore(0);
     }
 
@@ -137,10 +138,12 @@ public class GameManager : MonoBehaviour
         return null;
     }
 
-    //점수를 누적하고 출력하는 함수
-    public void DisplayScore(int score)
-    {
-        totScore += score;
-        scoreText.text = $"<color=#00ff00>SCORE :</color> <color=#ff0000>{totScore:#,##0}</color>";
-    }
+//점수를 누적하고 출력하는 함수
+public void DisplayScore(int score)
+{
+    totScore += score;
+    scoreText.text = $"<color=#00ff00>SCORE :</color> <color=#ff0000>{totScore:#,##0}</color>";
+    //스코어 저장
+    PlayerPrefs.SetInt("TOT_SCORE", totScore);
+}
 }

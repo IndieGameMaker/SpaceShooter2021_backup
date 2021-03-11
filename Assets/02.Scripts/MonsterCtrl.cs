@@ -196,7 +196,7 @@ IEnumerator MonsterAction()
             ShowBloodEffect(pos, rot);
 
             //몬스터의 hp 차감
-            hp -= 10;
+            hp -= 30;
             if (hp <= 0)
             {
                 state = State.DIE;
@@ -205,6 +205,7 @@ IEnumerator MonsterAction()
             }
         }
     }
+    
 
     //혈흔 효과를 생성하는 함수
     void ShowBloodEffect(Vector3 pos, Quaternion rot)
