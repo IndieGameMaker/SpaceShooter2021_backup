@@ -113,71 +113,71 @@ public class MonsterCtrl : MonoBehaviour
         }
     }
 
-//몬스터의 상태에 따라 몬스터의 동작을 수행
-IEnumerator MonsterAction()
-{
-    while (!isDie)
+    //몬스터의 상태에 따라 몬스터의 동작을 수행
+    IEnumerator MonsterAction()
     {
-        switch (state)
+        while (!isDie)
         {
-            //IDLE 상태
-            case State.IDLE:
-                //추적 중지
-                agent.isStopped = true;
+            switch (state)
+            {
+                //IDLE 상태
+                case State.IDLE:
+                    //추적 중지
+                    agent.isStopped = true;
 
-                //Animator의 IsTrace 변수를 false로 설정
-                //anim.SetBool("IsTrace", false);
-                anim.SetBool(hashTrace, false);
-                break;
-                
-            //추적 상태
-            case State.TRACE:
-                //추적 대상의 좌표로 이동시작
-                agent.SetDestination(playerTr.position);
-                agent.isStopped = false;
+                    //Animator의 IsTrace 변수를 false로 설정
+                    //anim.SetBool("IsTrace", false);
+                    anim.SetBool(hashTrace, false);
+                    break;
+                    
+                //추적 상태
+                case State.TRACE:
+                    //추적 대상의 좌표로 이동시작
+                    agent.SetDestination(playerTr.position);
+                    agent.isStopped = false;
 
-                //Animator의 IsTrace 변수를 true로 설정
-                //anim.SetBool("IsTrace", true);
-                anim.SetBool(hashTrace, true);
-                
-                //Animator의 IsAttack 변수를 false로 설정
-                anim.SetBool(hashAttack, false);
-                break;
+                    //Animator의 IsTrace 변수를 true로 설정
+                    //anim.SetBool("IsTrace", true);
+                    anim.SetBool(hashTrace, true);
+                    
+                    //Animator의 IsAttack 변수를 false로 설정
+                    anim.SetBool(hashAttack, false);
+                    break;
 
-            //공격 상태
-            case State.ATTACK:
-                //Animator의 IsAttack 변수를 true로 설정
-                anim.SetBool(hashAttack, true);
-                break;
+                //공격 상태
+                case State.ATTACK:
+                    //Animator의 IsAttack 변수를 true로 설정
+                    anim.SetBool(hashAttack, true);
+                    break;
 
-            //사망
-            case State.DIE:
-                isDie = true;
-                //추적 정지
-                agent.isStopped = true;
-                //사망 애니메이션 실행
-                anim.SetTrigger(hashDie);
-                //몬스터의 Collider 컴포넌트 비활성화
-                GetComponent<CapsuleCollider>().enabled = false;
+                //사망
+                case State.DIE:
+                    isDie = true;
+                    //추적 정지
+                    agent.isStopped = true;
+                    //사망 애니메이션 실행
+                    anim.SetTrigger(hashDie);
+                    //몬스터의 Collider 컴포넌트 비활성화
+                    GetComponent<CapsuleCollider>().enabled = false;
 
-                //일정시간 대기후 오브젝트 풀링으로 환원
-                yield return new WaitForSeconds(3.0f);
-                
-                //사망 후 다시 사용할 때를 위한 변숫값의 초기화
-                hp = 100;
-                isDie = false;
-                state = State.IDLE;
-                
-                //몬스터의 Collider 컴포넌트 활성화
-                GetComponent<CapsuleCollider>().enabled = true;
-                //몬스터를 비활성화
-                this.gameObject.SetActive(false);
+                    //일정시간 대기후 오브젝트 풀링으로 환원
+                    yield return new WaitForSeconds(3.0f);
+                    
+                    //사망 후 다시 사용할 때를 위한 변숫값의 초기화
+                    hp = 100;
+                    isDie = false;
+                    state = State.IDLE;
+                    
+                    //몬스터의 Collider 컴포넌트 활성화
+                    GetComponent<CapsuleCollider>().enabled = true;
+                    //몬스터를 비활성화
+                    this.gameObject.SetActive(false);
 
-                break;
+                    break;
+            }
+            yield return new WaitForSeconds(0.3f);
         }
-        yield return new WaitForSeconds(0.3f);
     }
-}
 
     void OnCollisionEnter(Collision coll)
     {
@@ -185,27 +185,29 @@ IEnumerator MonsterAction()
         {
             //충돌한 총알을 삭제
             Destroy(coll.gameObject);
-            //피격 리액션 애니메이션 실행
-            anim.SetTrigger(hashHit);
-            
-            //총알의 충돌 지점
-            Vector3 pos = coll.GetContact(0).point;
-            //총알의 충돌지점의 법선 벡터
-            Quaternion rot = Quaternion.LookRotation(-coll.GetContact(0).normal);
-            //혈흔 효과를 생성하는 함수 호출
-            ShowBloodEffect(pos, rot);
-
-            //몬스터의 hp 차감
-            hp -= 30;
-            if (hp <= 0)
-            {
-                state = State.DIE;
-                //몬스터가 사망했을 때 50점을 추가
-                GameManager.instance.DisplayScore(50);
-            }
         }
     }
-    
+
+    //레이캐스트를 사용해 데미지를 입히는 로직
+    public void OnDamage(Vector3 pos, Vector3 normal)
+    {
+        //피격 리액션 애니메이션 실행
+        anim.SetTrigger(hashHit);
+
+        Quaternion rot = Quaternion.LookRotation(normal);
+
+        //혈흔 효과를 생성하는 함수 호출
+        ShowBloodEffect(pos, rot);
+
+        //몬스터의 hp 차감
+        hp -= 30;
+        if (hp <= 0)
+        {
+            state = State.DIE;
+            //몬스터가 사망했을 때 50점을 추가
+            GameManager.instance.DisplayScore(50);
+        }        
+    }
 
     //혈흔 효과를 생성하는 함수
     void ShowBloodEffect(Vector3 pos, Quaternion rot)
